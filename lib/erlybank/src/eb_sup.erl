@@ -1,11 +1,11 @@
--module(eb_server_sup).
+-module(eb_sup).
 -behaviour(supervisor).
 
 -export([start_link/0,
 		 init/1]).
 
 start_link() ->
-	supervisor:start_link(eb_server_sup, []).
+	supervisor:start_link(eb_sup, []).
 
 init(_Args) ->
 	{ok, {{one_for_one,100,60},
