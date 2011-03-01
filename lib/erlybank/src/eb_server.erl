@@ -12,7 +12,9 @@
 %% API
 -export([start_link/0,
         create_account/1,
-        deposit/2]).
+        deposit/2,
+        withdraw/2,
+        delete_account/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -44,6 +46,20 @@ create_account(Name) ->
 %%--------------------------------------------------------------------
 deposit(Name, Amount) ->
   gen_server:call(?SERVER, {deposit, Name, Amount}).
+
+%%--------------------------------------------------------------------
+%% Function: withdraw(Name, Amount) -> {ok, Balance} | {error, Reason}
+%% Description: Withdraws Amount from Name's account.
+%%--------------------------------------------------------------------
+withdraw(Name, Amount) ->
+  gen_server:call(?SERVER, {withdraw, Name, Amount}).
+
+%%--------------------------------------------------------------------
+%% Function: delete_account(Name) -> ok
+%% Description: Deletes the account with the name Name.
+%%--------------------------------------------------------------------
+delete_account(Name) ->
+  gen_server:cast(?SERVER, {destroy, Name}).
 
 %%====================================================================
 %% gen_server callbacks
@@ -78,6 +94,17 @@ handle_call({deposit, Name, Amount}, _From, State) ->
     error ->
       {reply, {error, account_does_not_exist}, State}
   end;
+handle_call({withdraw, Name, Amount}, _From, State) ->
+  case dict:find(Name, State) of
+    {ok, Value} when Value < Amount ->
+      {reply, {error, not_enough_funds}, State};
+    {ok, Value} ->
+      NewBalance = Value - Amount,
+      NewState = dict:store(Name, NewBalance, State),
+      {reply, {ok, NewBalance}, NewState};
+    error ->
+      {reply, {error, account_does_not_exist}, State}
+  end;
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.
@@ -90,6 +117,8 @@ handle_call(_Request, _From, State) ->
 %%--------------------------------------------------------------------
 handle_cast({create, Name}, State) ->
   {noreply, dict:store(Name, 0, State)};
+handle_cast({destroy, Name}, State) ->
+  {noreply, dict:erase(Name, State)};
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
