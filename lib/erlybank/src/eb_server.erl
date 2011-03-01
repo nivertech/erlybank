@@ -11,7 +11,8 @@
 
 %% API
 -export([start_link/0,
-        create_account/1]).
+        create_account/1,
+        deposit/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -36,6 +37,14 @@ start_link() ->
 create_account(Name) ->
   gen_server:cast(?SERVER, {create, Name}).
 
+%%--------------------------------------------------------------------
+%% Function: deposit(Name, Amount) -> {ok, Balance} | {error, Reason}
+%% Description: Deposits Amount into Name's account. Returns the
+%% balance if successful, otherwise returns an error and reason.
+%%--------------------------------------------------------------------
+deposit(Name, Amount) ->
+  gen_server:call(?SERVER, {deposit, Name, Amount}).
+
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
@@ -59,6 +68,16 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
+handle_call({deposit, Name, Amount}, _From, State) ->
+  case dict:find(Name, State) of
+    {ok, Value} ->
+      NewBalance = Value + Amount,
+      Response = {ok, NewBalance},
+      NewState = dict:store(Name, NewBalance, State),
+      {reply, Response, NewState};
+    error ->
+      {reply, {error, account_does_not_exist}, State}
+  end;
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.
