@@ -35,6 +35,20 @@ req_handle('GET', ["balance", Name], Req) ->
         _ ->
             Req:respond({500, [], []})
     end;
+req_handle('GET', ["ui", Name], Req) ->
+	QS = Req:parse_qs(),
+	case {lists:keysearch("command", 1, QS),
+		  lists:keysearch("amount", ,of
+		
+		continue from here
+	case account_dtl:render([{name, Name}]) of
+		{ok, HTML} ->
+			Req:ok({ "text/html; charset=utf-8", % mime-type
+					 [],                         % headers
+					 HTML } );
+		_ ->
+			Req:respond({500, [], []})
+	end;
 req_handle('GET', _, Req) ->
     Req:not_found();
 req_handle('PUT', ["account", Name], Req) ->
