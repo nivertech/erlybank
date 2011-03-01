@@ -1,0 +1,4 @@
+{"mochiweb/src/*",              [debug_info, {outdir, "mochiweb/ebin"},             {i,"mochiweb/include"}]}.
+{"erlydtl/src/*",               [debug_info, {outdir, "erlydtl/ebin"},              {i,"erlydtl/include"}]}.
+{"erlybank/src/*",              [debug_info, {outdir, "erlybank/ebin"},             {i,"erlybank/include"}]}.
+
