@@ -3,6 +3,6 @@
   {vsn, "1.0"},
   {modules, []},
   {registered, []},
-  %{mod, {erlybank_app, []}},
+  {mod, {erlybank_app, []}},
   {env, []},
-  {applications, [kernel, stdlib, crypto, inets]}]}.
+  {applications, [kernel, stdlib]}]}.
