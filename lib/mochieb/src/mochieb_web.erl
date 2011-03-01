@@ -20,6 +20,13 @@ start(Options) ->
 stop() ->
     mochiweb_http:stop(?MODULE).
 
+http_status(ok) ->
+	204;
+http_status({ok,_}) ->
+	204;
+http_status(_) ->
+	500.
+
 req_handle('GET', ["balance", Name], Req) ->
     case eb:balance(Name) of
         {ok,X} ->
@@ -31,29 +38,21 @@ req_handle('GET', ["balance", Name], Req) ->
 req_handle('GET', _, Req) ->
     Req:not_found();
 req_handle('PUT', ["account", Name], Req) ->
-    case eb:create_account(Name) of
-        ok -> Req:respond({204, [], []});
-        _  -> Req:respond({500, [], []})
-    end;
+	Status = http_status(eb:create_account(Name)),
+	Req:respond({Status, [], []});
 req_handle('PUT', _, Req) ->
     Req:not_found();
 req_handle('POST', ["deposit", Name, Amount], Req) ->
-    case eb:deposit(Name, list_to_integer(Amount)) of
-        {ok,_} -> Req:respond({204, [], []});
-        _      -> Req:respond({500, [], []})
-    end;
+	Status = http_status(eb:deposit(Name, list_to_integer(Amount))),
+	Req:respond({Status, [], []});
 req_handle('POST', ["withdraw", Name, Amount], Req) ->
-    case eb:withdraw(Name, list_to_integer(Amount)) of
-        {ok,_} -> Req:respond({204, [], []});
-        _      -> Req:respond({500, [], []})
-    end;
+	Status = http_status(eb:withdraw(Name, list_to_integer(Amount))),
+	Req:respond({Status, [], []});
 req_handle('POST', _, Req) ->
     Req:not_found();
 req_handle('DELETE', ["account", Name], Req) ->
-    case eb:delete_account(Name) of
-        ok -> Req:respond({204, [], []});
-        _  -> Req:respond({500, [], []})
-    end;
+	Status = http_status(eb:delete_account(Name)),
+	Req:respond({Status, [], []});
 req_handle('DELETE', _, Req) ->
     Req:not_found();
 req_handle(_,_,Req) ->
