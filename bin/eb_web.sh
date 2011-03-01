@@ -1,0 +1,6 @@
+ERL_LIBS=../lib:$ERL_LIBS
+export ERL_LIBS
+
+erl -sname web_eb -boot start_sasl -eval '[application:start(A)||A<-[crypto,inets,mochieb]]'
+
+

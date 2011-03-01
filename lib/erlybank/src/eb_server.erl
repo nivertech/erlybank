@@ -14,6 +14,7 @@
         create_account/1,
         deposit/2,
         withdraw/2,
+        balance/1,
         delete_account/1]).
 
 %% gen_server callbacks
@@ -30,14 +31,14 @@
 %% Description: Starts the server
 %%--------------------------------------------------------------------
 start_link() ->
-  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+  gen_server:start_link({global, ?SERVER}, ?MODULE, [], []).
 
 %%--------------------------------------------------------------------
 %% Function: create_account(Name) -> ok
 %% Description: Creates a bank account for the person with name Name
 %%--------------------------------------------------------------------
 create_account(Name) ->
-  gen_server:cast(?SERVER, {create, Name}).
+  gen_server:cast({global, ?SERVER}, {create, Name}).
 
 %%--------------------------------------------------------------------
 %% Function: deposit(Name, Amount) -> {ok, Balance} | {error, Reason}
@@ -45,21 +46,30 @@ create_account(Name) ->
 %% balance if successful, otherwise returns an error and reason.
 %%--------------------------------------------------------------------
 deposit(Name, Amount) ->
-  gen_server:call(?SERVER, {deposit, Name, Amount}).
+  gen_server:call({global, ?SERVER}, {deposit, Name, Amount}).
 
 %%--------------------------------------------------------------------
 %% Function: withdraw(Name, Amount) -> {ok, Balance} | {error, Reason}
 %% Description: Withdraws Amount from Name's account.
 %%--------------------------------------------------------------------
 withdraw(Name, Amount) ->
-  gen_server:call(?SERVER, {withdraw, Name, Amount}).
+  gen_server:call({global, ?SERVER}, {withdraw, Name, Amount}).
+
+%%--------------------------------------------------------------------
+%% Function: balance(Name) -> {ok, Balance} | {error, Reason}
+%% Description: Returns balance for Name's acount 
+%%--------------------------------------------------------------------
+balance(Name) ->
+  gen_server:call({global, ?SERVER}, {balance, Name}).
+
+
 
 %%--------------------------------------------------------------------
 %% Function: delete_account(Name) -> ok
 %% Description: Deletes the account with the name Name.
 %%--------------------------------------------------------------------
 delete_account(Name) ->
-  gen_server:cast(?SERVER, {destroy, Name}).
+  gen_server:cast({global, ?SERVER}, {destroy, Name}).
 
 %%====================================================================
 %% gen_server callbacks
@@ -105,6 +115,14 @@ handle_call({withdraw, Name, Amount}, _From, State) ->
     error ->
       {reply, {error, account_does_not_exist}, State}
   end;
+handle_call({balance, Name}, _From, State) ->
+  case dict:find(Name, State) of
+    {ok, Value} ->
+      {reply, {ok, Value}, State};
+    error ->
+      {reply, {error, account_does_not_exist}, State}
+  end;
+
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.

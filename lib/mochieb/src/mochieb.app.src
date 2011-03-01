@@ -1,0 +1,14 @@
+{application, mochieb,
+ [{description, "mochieb"},
+  {vsn, "0.01"},
+  {modules, [
+    mochieb,
+    mochieb_app,
+    mochieb_sup,
+    mochieb_web,
+    mochieb_deps
+  ]},
+  {registered, []},
+  {mod, {mochieb_app, []}},
+  {env, []},
+  {applications, [kernel, stdlib, crypto]}]}.
