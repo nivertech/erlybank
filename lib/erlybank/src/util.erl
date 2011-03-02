@@ -1,5 +1,5 @@
 -module(util).
--export([list_to_float/1]).
+-export([list_to_float/1,float_to_list/1]).
 
 list_to_float(S) ->
 	case string:str(S, ".") of
