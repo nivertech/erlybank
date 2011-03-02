@@ -10,5 +10,5 @@ list_to_float(S) ->
 	end.
 
 float_to_list(X) ->
-	float_to_list(X * 1.0).
+	erlang:float_to_list(X * 1.0).
 
