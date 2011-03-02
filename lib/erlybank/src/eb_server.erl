@@ -14,13 +14,14 @@
         create_account/1,
         deposit/2,
         withdraw/2,
+        balance/1,
         delete_account/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
--define(SERVER, ?MODULE).
+-define(SERVER, {global, ?MODULE}).
 
 %%====================================================================
 %% API
@@ -30,7 +31,7 @@
 %% Description: Starts the server
 %%--------------------------------------------------------------------
 start_link() ->
-  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+  gen_server:start_link(?SERVER, ?MODULE, [], []).
 
 %%--------------------------------------------------------------------
 %% Function: create_account(Name) -> ok
@@ -53,6 +54,15 @@ deposit(Name, Amount) ->
 %%--------------------------------------------------------------------
 withdraw(Name, Amount) ->
   gen_server:call(?SERVER, {withdraw, Name, Amount}).
+
+%%--------------------------------------------------------------------
+%% Function: balance(Name) -> {ok, Balance} | {error, Reason}
+%% Description: Returns balance for Name's acount 
+%%--------------------------------------------------------------------
+balance(Name) ->
+  gen_server:call(?SERVER, {balance, Name}).
+
+
 
 %%--------------------------------------------------------------------
 %% Function: delete_account(Name) -> ok
@@ -105,6 +115,14 @@ handle_call({withdraw, Name, Amount}, _From, State) ->
     error ->
       {reply, {error, account_does_not_exist}, State}
   end;
+handle_call({balance, Name}, _From, State) ->
+  case dict:find(Name, State) of
+    {ok, Value} ->
+      {reply, {ok, Value}, State};
+    error ->
+      {reply, {error, account_does_not_exist}, State}
+  end;
+
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.
