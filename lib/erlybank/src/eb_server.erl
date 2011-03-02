@@ -21,7 +21,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
--define(SERVER, ?MODULE).
+-define(SERVER, {global, ?MODULE}).
 
 %%====================================================================
 %% API
@@ -31,14 +31,14 @@
 %% Description: Starts the server
 %%--------------------------------------------------------------------
 start_link() ->
-  gen_server:start_link({global, ?SERVER}, ?MODULE, [], []).
+  gen_server:start_link(?SERVER, ?MODULE, [], []).
 
 %%--------------------------------------------------------------------
 %% Function: create_account(Name) -> ok
 %% Description: Creates a bank account for the person with name Name
 %%--------------------------------------------------------------------
 create_account(Name) ->
-  gen_server:cast({global, ?SERVER}, {create, Name}).
+  gen_server:cast(?SERVER, {create, Name}).
 
 %%--------------------------------------------------------------------
 %% Function: deposit(Name, Amount) -> {ok, Balance} | {error, Reason}
@@ -46,21 +46,30 @@ create_account(Name) ->
 %% balance if successful, otherwise returns an error and reason.
 %%--------------------------------------------------------------------
 deposit(Name, Amount) ->
-  gen_server:call({global, ?SERVER}, {deposit, Name, Amount}).
+  gen_server:call(?SERVER, {deposit, Name, Amount}).
 
 %%--------------------------------------------------------------------
 %% Function: withdraw(Name, Amount) -> {ok, Balance} | {error, Reason}
 %% Description: Withdraws Amount from Name's account.
 %%--------------------------------------------------------------------
 withdraw(Name, Amount) ->
-  gen_server:call({global, ?SERVER}, {withdraw, Name, Amount}).
+  gen_server:call(?SERVER, {withdraw, Name, Amount}).
 
 %%--------------------------------------------------------------------
 %% Function: balance(Name) -> {ok, Balance} | {error, Reason}
 %% Description: Returns balance for Name's acount 
 %%--------------------------------------------------------------------
 balance(Name) ->
-  gen_server:call({global, ?SERVER}, {balance, Name}).
+  gen_server:call(?SERVER, {balance, Name}).
+
+
+
+%%--------------------------------------------------------------------
+%% Function: balance(Name) -> {ok, Balance} | {error, Reason}
+%% Description: Returns balance for Name's acount 
+%%--------------------------------------------------------------------
+balance(Name) ->
+  gen_server:call(?SERVER, {balance, Name}).
 
 
 
@@ -69,7 +78,7 @@ balance(Name) ->
 %% Description: Deletes the account with the name Name.
 %%--------------------------------------------------------------------
 delete_account(Name) ->
-  gen_server:cast({global, ?SERVER}, {destroy, Name}).
+  gen_server:cast(?SERVER, {destroy, Name}).
 
 %%====================================================================
 %% gen_server callbacks
