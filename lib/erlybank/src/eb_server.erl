@@ -14,13 +14,14 @@
         create_account/1,
         deposit/2,
         withdraw/2,
+        balance/1,
         delete_account/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
--define(SERVER, ?MODULE).
+-define(SERVER, {global, ?MODULE}).
 
 %%====================================================================
 %% API
@@ -29,13 +30,15 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
+-spec start_link() -> {ok,pid()} | ignore | {error,{already_started,pid()}|term()}.
 start_link() ->
-  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+  gen_server:start_link(?SERVER, ?MODULE, [], []).
 
 %%--------------------------------------------------------------------
 %% Function: create_account(Name) -> ok
 %% Description: Creates a bank account for the person with name Name
 %%--------------------------------------------------------------------
+-spec create_account(Name::string()) -> ok.
 create_account(Name) ->
   gen_server:cast(?SERVER, {create, Name}).
 
@@ -44,6 +47,7 @@ create_account(Name) ->
 %% Description: Deposits Amount into Name's account. Returns the
 %% balance if successful, otherwise returns an error and reason.
 %%--------------------------------------------------------------------
+-spec deposit(Name::string(), Amount::float()) -> {ok, float()}|{error,term()}.
 deposit(Name, Amount) ->
   gen_server:call(?SERVER, {deposit, Name, Amount}).
 
@@ -51,13 +55,25 @@ deposit(Name, Amount) ->
 %% Function: withdraw(Name, Amount) -> {ok, Balance} | {error, Reason}
 %% Description: Withdraws Amount from Name's account.
 %%--------------------------------------------------------------------
+-spec withdraw(Name::string(), Amount::float()) -> {ok, float()}|{error,term()}.
 withdraw(Name, Amount) ->
   gen_server:call(?SERVER, {withdraw, Name, Amount}).
+
+%%--------------------------------------------------------------------
+%% Function: balance(Name) -> {ok, Balance} | {error, Reason}
+%% Description: Returns balance for Name's acount 
+%%--------------------------------------------------------------------
+-spec balance(Name::string()) -> {ok, float()}|{error,term()}.
+balance(Name) ->
+  gen_server:call(?SERVER, {balance, Name}).
+
+
 
 %%--------------------------------------------------------------------
 %% Function: delete_account(Name) -> ok
 %% Description: Deletes the account with the name Name.
 %%--------------------------------------------------------------------
+-spec delete_account(Name::string()) -> ok.
 delete_account(Name) ->
   gen_server:cast(?SERVER, {destroy, Name}).
 
@@ -72,6 +88,7 @@ delete_account(Name) ->
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
+-spec init([]) -> {ok, term()}.
 init([]) ->
   {ok, dict:new()}.
 
@@ -105,6 +122,14 @@ handle_call({withdraw, Name, Amount}, _From, State) ->
     error ->
       {reply, {error, account_does_not_exist}, State}
   end;
+handle_call({balance, Name}, _From, State) ->
+  case dict:find(Name, State) of
+    {ok, Value} ->
+      {reply, {ok, Value}, State};
+    error ->
+      {reply, {error, account_does_not_exist}, State}
+  end;
+
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.
