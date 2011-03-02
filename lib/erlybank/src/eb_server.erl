@@ -63,16 +63,6 @@ balance(Name) ->
   gen_server:call(?SERVER, {balance, Name}).
 
 
-
-%%--------------------------------------------------------------------
-%% Function: balance(Name) -> {ok, Balance} | {error, Reason}
-%% Description: Returns balance for Name's acount 
-%%--------------------------------------------------------------------
-balance(Name) ->
-  gen_server:call(?SERVER, {balance, Name}).
-
-
-
 %%--------------------------------------------------------------------
 %% Function: delete_account(Name) -> ok
 %% Description: Deletes the account with the name Name.
