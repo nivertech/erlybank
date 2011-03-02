@@ -1,5 +1,5 @@
 -module(util).
--export([list_to_float/1]).
+-export([list_to_float/1,float_to_list/1]).
 
 list_to_float(S) ->
 	case string:str(S, ".") of
@@ -10,4 +10,5 @@ list_to_float(S) ->
 	end.
 
 float_to_list(X) ->
-	float_to_list(X * 1.0).
+	erlang:float_to_list(X * 1.0).
+
