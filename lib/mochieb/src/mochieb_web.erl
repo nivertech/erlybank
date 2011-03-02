@@ -37,18 +37,43 @@ req_handle('GET', ["balance", Name], Req) ->
     end;
 req_handle('GET', ["ui", Name], Req) ->
 	QS = Req:parse_qs(),
-	case {lists:keysearch("command", 1, QS),
-		  lists:keysearch("amount", ,of
-		
-		continue from here
-	case account_dtl:render([{name, Name}]) of
-		{ok, HTML} ->
-			Req:ok({ "text/html; charset=utf-8", % mime-type
-					 [],                         % headers
-					 HTML } );
-		_ ->
-			Req:respond({500, [], []})
+	Redirect = 
+		case {lists:keysearch("command", 1, QS),
+			  lists:keysearch("amount",  1, QS)} of 
+			{{value, {"command", "Deposit"}}, {value, {"amount", Amount}}} ->
+				eb:deposit(Name, util:list_to_float(Amount)),
+				true;
+			{{value, {"command", "Withdraw"}}, {value, {"amount", Amount}}} ->
+				eb:withdraw(Name, util:list_to_float(Amount)),
+				true;
+			_ ->
+				false
+		end,
+	case Redirect of 
+		true ->
+			Loc = ("http://" ++ 
+				   mochiweb_headers:get_value("host", Req:get(headers)) ++ 
+				   "/ui/" ++ Name),
+			Req:respond({302, [{"Location", Loc},
+							   {"Content-Type", "text/html; charset=UTF-8"}], 
+						 ""});
+		false ->
+			case eb:balance(Name) of
+				{ok, Balance} ->
+					case account_dtl:render([{name, Name}, 
+											 {current_amount, Balance}]) of
+						{ok, HTML} ->
+							Req:ok({ "text/html; charset=utf-8", % mime-type
+									 [],                         % headers
+									 HTML } );
+						_ ->
+							Req:respond({500, [], []})
+					end;
+				_ ->
+					Req:respond({500, [], "User does not exist"})
+			end
 	end;
+
 req_handle('GET', _, Req) ->
     Req:not_found();
 req_handle('PUT', ["account", Name], Req) ->
