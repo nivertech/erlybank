@@ -31,7 +31,7 @@ req_handle('GET', ["balance", Name], Req) ->
     case eb:balance(Name) of
         {ok,X} ->
             Req:respond({200, [], 
-                         list_to_binary(integer_to_list(X))});
+                         list_to_binary(util:float_to_list(X))});
         _ ->
             Req:respond({500, [], []})
     end;
@@ -82,10 +82,10 @@ req_handle('PUT', ["account", Name], Req) ->
 req_handle('PUT', _, Req) ->
     Req:not_found();
 req_handle('POST', ["deposit", Name, Amount], Req) ->
-    Status = http_status(eb:deposit(Name, list_to_integer(Amount))),
+    Status = http_status(eb:deposit(Name, util:list_to_float(Amount))),
     Req:respond({Status, [], []});
 req_handle('POST', ["withdraw", Name, Amount], Req) ->
-    Status = http_status(eb:withdraw(Name, list_to_integer(Amount))),
+    Status = http_status(eb:withdraw(Name, util:list_to_float(Amount))),
     Req:respond({Status, [], []});
 req_handle('POST', _, Req) ->
     Req:not_found();

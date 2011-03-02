@@ -8,3 +8,6 @@ list_to_float(S) ->
 		_ ->
 			erlang:list_to_float(S)
 	end.
+
+float_to_list(X) ->
+	float_to_list(X * 1.0).
